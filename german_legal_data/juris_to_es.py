@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 from bs4 import BeautifulSoup
@@ -22,13 +23,24 @@ def parse_content(d: dict):
             paragraphs = None
         return paragraphs
 
+    def parse_key_value(topmore):
+        try:
+            key = get_label(topmore)
+            value = get_paragraphs(topmore.next_sibling)
+            return key, value
+        except:
+            return None
+            # key,value = None,None
+
     # --------------------------------------------------------------------------------
     soup = BeautifulSoup(d["content"], "html.parser")
 
-    parsed = {
-        get_label(topmore): get_paragraphs(topmore.next_sibling)
+    kvs = [
+        parse_key_value(topmore)
         for topmore in soup.find_all("div", class_="docLayoutMarginTopMore")
-    }
+    ]
+
+    parsed = {kv[0]: kv[1] for kv in kvs if kv is not None}
     d.update(parsed)
     d["date"] = datetime.strptime(d["date"], "%d.%m.%Y").isoformat()
     return d
@@ -39,15 +51,27 @@ if __name__ == "__main__":
 
     home = str(Path.home())
     # home = '/home/tilo/gunther'
-    files = [home + "/data/juris/htmls/31-12-2012_to_06-01-2013.jsonl.gz"]
+    data_path = home + "/data/juris/htmls"
+    files = [data_path + "/" + f for f in os.listdir(data_path) if "hits" not in f]
     dicts_g = (parse_content(d) for file in files for d in read_jsonl(file))
-    # data = list(dicts_g)
 
     INDEX_NAME = "juris"
     TYPE = "decision"
+    mapping = """
+    {
+      "mappings": {
+        "properties": {
+          "content": {
+            "type": "str",
+            "enabled": false
+          }
+        }
+      }
+    }
+    """
     es_client = build_es_client()
 
     es_client.indices.delete(index=INDEX_NAME, ignore=[400, 404])
-    es_client.indices.create(index=INDEX_NAME, ignore=400)
+    es_client.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
 
     populate_es_streaming_bulk(es_client, dicts_g, INDEX_NAME, TYPE)
