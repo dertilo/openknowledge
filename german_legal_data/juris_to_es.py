@@ -1,10 +1,12 @@
 import json
 import os
 from datetime import datetime
+from time import time
 
 from bs4 import BeautifulSoup
 from util.data_io import read_jsonl
 
+from esutil.es_stateful_parallel_pool import populate_es_parallel_pool, setup_index
 from esutil.es_streaming_bulk import populate_es_streaming_bulk
 from esutil.es_util import build_es_client
 
@@ -30,7 +32,6 @@ def parse_content(d: dict):
             return key, value
         except:
             return None
-            # key,value = None,None
 
     # --------------------------------------------------------------------------------
     soup = BeautifulSoup(d["content"], "html.parser")
@@ -42,7 +43,10 @@ def parse_content(d: dict):
 
     parsed = {kv[0]: kv[1] for kv in kvs if kv is not None}
     d.update(parsed)
-    d["date"] = datetime.strptime(d["date"], "%d.%m.%Y").isoformat()
+    try:
+        d["date"] = datetime.strptime(d["date"], "%d.%m.%Y").isoformat()
+    except:
+        pass
     return d
 
 
@@ -53,10 +57,10 @@ if __name__ == "__main__":
     # home = '/home/tilo/gunther'
     data_path = home + "/data/juris/htmls"
     files = [data_path + "/" + f for f in os.listdir(data_path) if "hits" not in f]
-    dicts_g = (parse_content(d) for file in files for d in read_jsonl(file))
 
     INDEX_NAME = "juris"
     TYPE = "decision"
+
     mapping = """
     {
       "mappings": {
@@ -70,8 +74,22 @@ if __name__ == "__main__":
     }
     """
     es_client = build_es_client()
+    setup_index(es_client, files, INDEX_NAME, TYPE, from_scratch=True, mapping=mapping)
 
-    es_client.indices.delete(index=INDEX_NAME, ignore=[400, 404])
-    es_client.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
+    start = time()
+    num_processes = 8
+    populate_es_parallel_pool(
+        files, INDEX_NAME, TYPE, process_fun=parse_content, num_processes=num_processes
+    )
+    dur = time() - start
 
-    populate_es_streaming_bulk(es_client, dicts_g, INDEX_NAME, TYPE)
+    # dicts_g = (parse_content(d) for file in files for d in read_jsonl(file))
+    # es_client.indices.delete(index=INDEX_NAME, ignore=[400, 404])
+    # es_client.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
+    #
+    # populate_es_streaming_bulk(es_client, dicts_g, INDEX_NAME, TYPE)
+
+    """
+    461001it [5:38:14, 28.62it/s]
+    kibana says indexing-rate around 23it/s
+    """
