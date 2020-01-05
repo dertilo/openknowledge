@@ -82,6 +82,7 @@ if __name__ == "__main__":
         files, INDEX_NAME, TYPE, process_fun=parse_content, num_processes=num_processes
     )
     dur = time() - start
+    print('took: %0.2f seconds'%dur)
 
     # dicts_g = (parse_content(d) for file in files for d in read_jsonl(file))
     # es_client.indices.delete(index=INDEX_NAME, ignore=[400, 404])
@@ -90,6 +91,11 @@ if __name__ == "__main__":
     # populate_es_streaming_bulk(es_client, dicts_g, INDEX_NAME, TYPE)
 
     """
+    using 'populate_es_streaming_bulk'-method
     461001it [5:38:14, 28.62it/s]
-    kibana says indexing-rate around 23it/s
+    kibana says indexing-rate around 23/s
+    
+    using 'populate_es_parallel_pool'-method with 8 processes:
+    indexing-rate: 130/s
+    1.3 mio docs took 3 hours
     """
