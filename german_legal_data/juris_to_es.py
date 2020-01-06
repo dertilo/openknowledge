@@ -74,8 +74,7 @@ if __name__ == "__main__":
     }
     """
     es_client = build_es_client()
-    setup_index(es_client, files, INDEX_NAME, TYPE, from_scratch=True, mapping=mapping)
-
+    files = setup_index(es_client, files, INDEX_NAME, TYPE, from_scratch=False, mapping=mapping)
     start = time()
     num_processes = 8
     populate_es_parallel_pool(
@@ -83,12 +82,6 @@ if __name__ == "__main__":
     )
     dur = time() - start
     print('took: %0.2f seconds'%dur)
-
-    # dicts_g = (parse_content(d) for file in files for d in read_jsonl(file))
-    # es_client.indices.delete(index=INDEX_NAME, ignore=[400, 404])
-    # es_client.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
-    #
-    # populate_es_streaming_bulk(es_client, dicts_g, INDEX_NAME, TYPE)
 
     """
     using 'populate_es_streaming_bulk'-method
