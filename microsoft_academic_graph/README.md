@@ -1,6 +1,6 @@
 # Microsoft Academic Graph
 
-[entity-relationship-diagram.png](https://docs.microsoft.com/en-us/academic-services/graph/media/erd/entity-relationship-diagram.png)
+![entity-relationship-diagram.png](https://docs.microsoft.com/en-us/academic-services/graph/media/erd/entity-relationship-diagram.png)
 ## instering data in sql-database
 
 ### postgres
