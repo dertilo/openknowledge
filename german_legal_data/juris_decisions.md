@@ -66,7 +66,7 @@
         ['Abweichende Meinung', 'Entscheidungsgründe', 'Erledigungsvermerk', 'Gründe', 'Leitsatz', 'Orientierungssatz', 'Rechtsfrage', 'Sonstiger Kurztext', 'Sonstiger Langtext', 'Sonstiger Orientierungssatz', 'Tatbestand']
 
 
-# [Latent Semantic Analysis on 'Orientierungsatz'](openknowledge/german_legal_data/latent_semantic_analysis.py)
+# [Latent Semantic Analysis on 'Orientierungsatz'](latent_semantic_analysis.py)
 * not sure whether these wordclouds make any sense
 
 ### dimension 0 
