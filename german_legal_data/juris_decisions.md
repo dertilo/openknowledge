@@ -64,3 +64,14 @@
 * 14467 decisions do not contain any of the following fields
 
         ['Abweichende Meinung', 'Entscheidungsgründe', 'Erledigungsvermerk', 'Gründe', 'Leitsatz', 'Orientierungssatz', 'Rechtsfrage', 'Sonstiger Kurztext', 'Sonstiger Langtext', 'Sonstiger Orientierungssatz', 'Tatbestand']
+
+
+# [Latent Semantic Analysis on 'Orientierungsatz'](openknowledge/german_legal_data/latent_semantic_analysis.py)
+* not sure whether these wordclouds make any sense
+
+### dimension 0 
+![0](word_clouds/0.png)
+### dimension 1 
+![1](word_clouds/1.png)
+### dimension 6 
+![6](word_clouds/6.png)
