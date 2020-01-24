@@ -1,7 +1,9 @@
+import re
 from time import time
 
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from typing import List
 from util import data_io
 
 from openknowledge.wordcloud_methods import word_cloud_pdf
@@ -15,6 +17,14 @@ def print_top_words(model, feature_names, n_top_words):
         )
         print(message)
 
+def get_nrams(tokens:List[str], min_n=1, max_n=5):
+    return ['_'.join(tokens[k:k + ngs]) for ngs in range(min_n, max_n + 1) for k in range(len(tokens) - ngs)]
+
+def regex_tokenizer(text, pattern=r"(?u)\b\w\w+\b"):# pattern stolen from scikit-learn
+    return [m.group() for m in re.finditer(pattern, text)]
+
+def text_to_bow(text):
+    return get_nrams(regex_tokenizer(text),1,3)
 
 if __name__ == "__main__":
     file = "BverfG_juris.jsonl.gz"
@@ -26,14 +36,14 @@ if __name__ == "__main__":
 
     vectorizer = TfidfVectorizer(
         min_df=3,
-        # tokenizer=lambda x: x,
-        # preprocessor=lambda x: x,
+        tokenizer=lambda x: x,
+        preprocessor=lambda x: x,
         lowercase=False,
         sublinear_tf=False,
-        max_features=5000,
+        max_features=20000,
         max_df=0.75,
     )
-    tf = vectorizer.fit_transform(texts)
+    tf = vectorizer.fit_transform([text_to_bow(text) for text in texts])
 
     pca = TruncatedSVD(n_components=20, random_state=42)
 
